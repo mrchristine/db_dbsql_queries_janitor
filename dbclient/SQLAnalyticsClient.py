@@ -1,14 +1,27 @@
 from dbclient import *
 from datetime import datetime, date
-import re
+import re, math
 
 
 class SQLAnalyticsClient(ClustersClient):
 
     def get_scheduled_queries(self):
-        all_queries = self.get('/preview/sql/queries/admin').get('results', [])
-        scheduled_queries = list(filter(lambda x: x.get('schedule') is not None, all_queries))
-        return scheduled_queries
+        # use page / page_num parameters during query
+        # https://docs.databricks.com/sql/api/queries-dashboards.html#operation/sql-analytics-get-queries
+        all_scheduled_queries = []
+        q_resp = self.get('/preview/sql/queries/admin')
+        total_results = q_resp.get('count')
+        page_size = q_resp.get('page_size')
+        total_pages = math.ceil(total_results / page_size)
+        first_results = q_resp.get('results', [])
+        all_scheduled_queries = list(filter(lambda x: x.get('schedule') is not None, first_results))
+        if total_pages > 1:
+            for current_page in range(2, total_pages+1):
+                q_resp = self.get(f'/preview/sql/queries/admin?page={current_page}')
+                paged_results = q_resp.get('results', [])
+                scheduled_paged_results = list(filter(lambda x: x.get('schedule') is not None, paged_results))
+                all_scheduled_queries = all_scheduled_queries + scheduled_paged_results
+        return all_scheduled_queries
 
     def delete_scheduled_queries(self, query_list):
         # admins don't have access to modify the scheduled queries, so we del them
