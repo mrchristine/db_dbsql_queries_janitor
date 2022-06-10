@@ -118,10 +118,16 @@ class dbclient:
         if json_params:
             raw_results = requests.delete(self._url + '/api/{0}'.format(ver) + endpoint, headers=self._token,
                                        params=json_params)
-            results = raw_results.json()
+            if raw_results.status_code != 200:
+                results = {'http_status_code': raw_results.status_code}
+            else:
+                results = raw_results.json()
         else:
             raw_results = requests.delete(self._url + '/api/{0}'.format(ver) + endpoint, headers=self._token)
-            results = raw_results.json()
+            if raw_results.status_code != 200:
+                results = {'http_status_code': raw_results.status_code}
+            else:
+                results = raw_results.json()
         if printJson:
             print(json.dumps(results, indent=4, sort_keys=True))
         results['http_status_code'] = raw_results.status_code
