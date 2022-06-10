@@ -122,13 +122,14 @@ class dbclient:
                 results = {'http_status_code': raw_results.status_code}
             else:
                 results = raw_results.json()
+                results['http_status_code'] = raw_results.status_code
         else:
             raw_results = requests.delete(self._url + '/api/{0}'.format(ver) + endpoint, headers=self._token)
             if raw_results.status_code != 200:
                 results = {'http_status_code': raw_results.status_code}
             else:
                 results = raw_results.json()
+                results['http_status_code'] = raw_results.status_code
         if printJson:
             print(json.dumps(results, indent=4, sort_keys=True))
-        results['http_status_code'] = raw_results.status_code
         return results
