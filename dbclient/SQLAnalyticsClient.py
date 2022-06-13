@@ -28,9 +28,9 @@ class SQLAnalyticsClient(ClustersClient):
         total_deleted = 0
         for query_details in query_list:
             qid = query_details.get('id')
-            print(query_details)
+            print("Deleting: ", query_details.get('name'), query_details.get('user'))
             api = f'/preview/sql/queries/{qid}'
-            resp = self.post(api, query_details)
+            resp = self.delete(api)
             if resp.get('http_status_code') == 200:
                 total_deleted += 1
             print(resp)
